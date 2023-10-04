@@ -1,5 +1,5 @@
 -module(my_cache).
--export([create/1, insert/3, insert/4, lookup/2]).
+-export([create/1, insert/3, insert/4, lookup/2, delete_obsolete/1, delete_obsolete/2]).
 
 create(TableName) ->
   ets:new(TableName, [public, named_table, set]).
@@ -28,4 +28,18 @@ lookup(TableName, Key) ->
         Value
     end.  
 
-
+delete_obsolete(TableName) ->
+   Key = ets:first(TableName),
+   io:fwrite("~w \n", [Key]),
+   delete_obsolete(TableName,Key).
+   
+delete_obsolete(TableName,Key)->
+    Value = lookup(TableName,Key),
+    if 
+       Value == undefined ->
+        ets:delete(TableName,Key);
+    true ->
+        NextKey = ets:next(TableName,Key),
+        io:fwrite("~w \n", [NextKey]),
+        delete_obsolete(TableName,NextKey)
+    end.    
